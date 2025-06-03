@@ -298,6 +298,7 @@ public class DictionariesProcessor {
 
     private void addManualDictionaries() {
         hyphenData.add(new HyphenData(List.of("ro/ro.dic"), List.of("ro", "ro-RO")));
+        hyphenData.add(new HyphenData(List.of("la/hyph_la.dic"), List.of("la")));
     }
 
     private void saveHyphenDataToJson() {
@@ -319,7 +320,7 @@ public class DictionariesProcessor {
         System.out.println("Hypherator Dictionaries Processor");
         System.out.println("Current path: " + System.getProperty("user.dir"));
         if (args.length != 3) {
-            args = List.of("dictionaries", "hypherator-core/src/main/resources/3pp_licenses", "hypherator-core/src/main/resources/hyphen").toArray(new String[0]);
+            args = List.of("dictionaries", "hypherator/src/main/resources/3pp_licenses", "hypherator/src/main/resources/hyphen").toArray(new String[0]);
             //System.err.println("Usage: DictionariesProcessor <sourceDirectory> <licenseDirectory> <hyphenDirectory>");
             //System.exit(1);
         }
