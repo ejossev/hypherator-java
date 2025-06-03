@@ -10,6 +10,22 @@ Iterator-based API for compatibility with existing tokenizer designs (e.g., ICU4
 
 Open-source under the MIT license
 
+Installation:
+
+ - Put the dependency into your `pom.xml` 
+```xml
+<dependency>
+  <groupId>io.sevcik</groupId>
+  <artifactId>hypherator</artifactId>
+  <version>1.0</version>
+</dependency>
+```
+
+- or if you're using gradle:
+```xml
+implementation("io.sevcik:hypherator:1.0")
+```
+
 Usage:
 
 ```
