@@ -11,14 +11,18 @@ Iterator-based API for compatibility with existing tokenizer designs (e.g., ICU4
 Open-source under the MIT license
 
 Usage:
-```
-Hypherator hypherator = new Hypherator("en_US");
-String word = "typography";
-HyphenIterator iterator = hypherator.hyphenate(word);
 
-while (iterator.hasNext()) {
-    System.out.print(iterator.next());
-}
+```
+        String word = "typography";
+        HyphenIterator iterator = Hypherator.getInstance("en_US");
+        iterator.setWord(word);
+        var potentialBreak = iterator.first();
+        int count = 0;
+        while (potentialBreak != DONE) {
+            var parts = iterator.applyBreak(pb);
+            System.out.println(parts.getFirst() + " - " + parts.getSecond());
+            potentialBreak = iterator.next();
+        }
 
 ```
 
