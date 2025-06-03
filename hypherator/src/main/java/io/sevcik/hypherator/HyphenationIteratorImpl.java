@@ -59,6 +59,22 @@ public class HyphenationIteratorImpl implements HyphenationIterator {
         return hyphenate.applyBreak(word, breakRule);
     }
 
+    @Override
+    public HyphenationIterator getInstanceOnRightPart(PotentialBreak breakRule) {
+        if (breaks == null) throw new IllegalStateException("No word has been set");
+        if (breakRule == null) throw new IllegalArgumentException("Break rule cannot be null");
+        var parts = hyphenate.applyBreak(word, breakRule);
+        var newPotentialBreaksList = hyphenate.getFurtherHyphenations(dict, breaks, breakRule, parts.getSecond());
+        var newIterator = new HyphenationIteratorImpl(dict);
+
+        newIterator.priorityFilter = priorityFilter;
+        newIterator.word = parts.getSecond();
+        newIterator.breaks = newPotentialBreaksList;
+        newIterator.index = -1;
+        return newIterator;
+
+    }
+
     private void resetState() {
         index = -1;
     }

@@ -6,12 +6,16 @@ import io.sevcik.hypherator.dto.PotentialBreak;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 class HyphenateImpl implements Hyphenate {
+    public static final int DEFAULT_HYPHEN_MIN = 2;
+
     @Override
     public Pair<String, String> applyBreak(String text, PotentialBreak breakRule) {
         PotentialBreakImpl breakRuleImpl = (PotentialBreakImpl) breakRule;
         if (breakRuleImpl.breakRule().replacement != null) {
-            // aaa5bbb/ab=ab,3,2
             var replacementStart = breakRuleImpl.position() + breakRuleImpl.breakRule().replacementIndex - 1; // because replacement index by spec starts at 1
             var substituedText =
                     text.substring(0, replacementStart) + // position points AFTER the character in question, so we have to cut one before
@@ -28,22 +32,69 @@ class HyphenateImpl implements Hyphenate {
     }
 
     @Override
+    public List<PotentialBreak> getFurtherHyphenations(HyphenDict dict, List<PotentialBreak> currentBreaks, PotentialBreak breakPosition, String rightPart) {
+        List<PotentialBreak> result = new ArrayList<>();
+        PotentialBreakImpl breakPositionImpl = (PotentialBreakImpl) breakPosition;
+        for (var potentialBreak : currentBreaks) {
+            PotentialBreakImpl potentialBreakImpl = (PotentialBreakImpl) potentialBreak;
+            if (potentialBreakImpl.position() <= breakPositionImpl.position() + dict.leftHyphenMin) {
+                continue;
+            }
+            // TODO: take into account the current break rule and calculate if there is shift in the right part.
+            result.add(new PotentialBreakImpl(potentialBreakImpl.position() - breakPositionImpl.position(), potentialBreakImpl.priority(), potentialBreakImpl.breakRule()));
+        }
+        cleanBreaksAtEdges(dict, rightPart, result);
+        return result;
+    }
+
+    @Override
     public List<PotentialBreak> hyphenate(HyphenDict dict, String text) {
         List<PotentialBreak> possibleBreaks = applyStandardRules(dict, text, true, true);
         applyNohyphenRules(dict, text, possibleBreaks);
         // apply rules for not breaking too close to the word ends
+        cleanBreaksAtEdges(dict, text, possibleBreaks);
+        return possibleBreaks;
+    }
+
+    private void cleanBreaksAtEdges(HyphenDict dict, String text, List<PotentialBreak> possibleBreaks) {
         int digitsFromLeft = 0;
         int digitsFromRight = 0;
+
         while (digitsFromLeft < text.length() && text.charAt(digitsFromLeft) >= '0' && text.charAt(digitsFromLeft) <= '9')
             digitsFromLeft++;
         while (digitsFromRight < text.length() && text.charAt(text.length() - 1 - digitsFromRight) >= '0' && text.charAt(text.length() - 1 - digitsFromRight) <= '9')
             digitsFromRight++;
-        int finalDigitsFromLeft = digitsFromLeft;
-        int finalDigitsFromRight = digitsFromRight;
+
+        int leftHyphenMin = dict.leftHyphenMin > 0 ? dict.leftHyphenMin : DEFAULT_HYPHEN_MIN;
+        int rightHyphenMin = dict.rightHyphenMin > 0 ? dict.rightHyphenMin : DEFAULT_HYPHEN_MIN;
+
+        int ligaturesFromLeft = 0;
+        int ligaturesFromRight = 0;
+
+        for (int i = 0; i < min(leftHyphenMin, text.length()); i++) {
+            if (text.charAt(i) >= '\ufb00' && text.charAt(i) <= '\ufb06') {
+                ligaturesFromLeft++;
+                if (text.charAt(i) == '\ufb03' || text.charAt(i) == '\ufb04') {
+                    ligaturesFromLeft++;
+                }
+            }
+        }
+
+        for (int i = max(text.length() - rightHyphenMin, 0); i < text.length(); i++) {
+            if (text.charAt(i) >= '\ufb00' && text.charAt(i) <= '\ufb06') {
+                ligaturesFromRight++;
+                if (text.charAt(i) == '\ufb03' || text.charAt(i) == '\ufb04') {
+                    ligaturesFromRight++;
+                }
+            }
+        }
+
+        int skipFromLeft = digitsFromLeft - ligaturesFromLeft;
+        int skipFromRight = digitsFromRight - ligaturesFromRight;
+
         possibleBreaks.removeIf(
-                breakRule -> ((PotentialBreakImpl)breakRule).position() < dict.leftHyphenMin + finalDigitsFromLeft ||
-                        ((PotentialBreakImpl)breakRule).position() > text.length() - dict.rightHyphenMin - finalDigitsFromRight);
-        return possibleBreaks;
+                breakRule -> ((PotentialBreakImpl)breakRule).position() < leftHyphenMin + skipFromLeft ||
+                        ((PotentialBreakImpl)breakRule).position() > text.length() - rightHyphenMin - skipFromRight);
     }
 
     private void applyNohyphenRules(HyphenDict dict, String text, List<PotentialBreak> possibleBreaks) {
@@ -131,7 +182,7 @@ class HyphenateImpl implements Hyphenate {
         int textLength = text.length();
         for (int start = 0; start < textLength - 1; start++) {
             for (int end = start + 1; end <= textLength; end++) {
-                String toMatch = text.substring(start, end);
+                String toMatch = text.substring(start, end).toLowerCase();
                 if (dict.rules.containsKey(toMatch)) {
                     for (var breakRuleEntry : dict.rules.get(toMatch).getBreakRules().entrySet()) {
                         int breakPosition = start + breakRuleEntry.getKey();

@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * hyphenation operations lightweight for your application.
  * <p>
  * Use {@link #getInstance(String)} to create new hyphenation iterators for specific locales.
+ * <p>
+ * Sponsored by <a href="https://pdf365.cloud">pdf365.cloud</a>.
  */
 
 
@@ -46,7 +48,7 @@ public class Hypherator {
      * 
      * @throws IOException if there's an error loading the dictionaries
      */
-    public Hypherator() throws IOException {
+    protected Hypherator() throws IOException {
         loadDictionaries();
     }
 
@@ -63,12 +65,23 @@ public class Hypherator {
      * load and reuse the {@code Hyphenator} and its dictionaries as a singleton.
      * </p>
      */
-    public HyphenationIterator getInstance(String locale) {
+    public static HyphenationIterator getInstance(String locale) {
         locale = locale.replace('_', '-');
         HyphenDict dict = dictionaries.get(locale);
         if (dict == null) {
             return null;
         }
+        return new HyphenationIteratorImpl(dict);
+    }
+
+    /**
+     * Builds a new {@link HyphenationIterator} instance from provided input stream
+     * @param inputStream the input stream with dictionary data
+     * @return a new {@link HyphenationIterator} for the given input stream
+     * @throws IOException In case the dictionary cannot be read.
+     */
+    public static HyphenationIterator getInstance(InputStream inputStream) throws IOException{
+        HyphenDict dict = HyphenDictBuilder.fromInputStream(inputStream);
         return new HyphenationIteratorImpl(dict);
     }
 

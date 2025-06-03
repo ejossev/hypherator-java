@@ -35,4 +35,14 @@ public interface Hyphenate {
      * @return a pair containing the text before and after the break
      */
     Pair<String, String> applyBreak(String text, PotentialBreak breakRule);
+
+    /**
+     * Returns a list of hyphenation opportunities ({@link PotentialBreak}) for the right part of the text already hyphenated.
+     * <b>Prefer using {@link io.sevcik.hypherator.HyphenationIterator} to process and apply hyphenation points.</b>
+     *
+     * @param dict the hyphenation dictionary
+     * @param currentBreaks the breaks identified in previous iteration
+     * @param breakPosition the position of the break point
+     */
+    List<PotentialBreak> getFurtherHyphenations(HyphenDict dict, List<PotentialBreak> currentBreaks, PotentialBreak breakPosition, String rightPart);
 }

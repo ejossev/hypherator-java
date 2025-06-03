@@ -3,6 +3,8 @@ package io.sevcik.hypherator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sevcik.hypherator.dto.PotentialBreak;
 import org.junit.jupiter.api.Test;
+
+import static io.sevcik.hypherator.HyphenationIterator.DONE;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.*;
@@ -17,7 +19,7 @@ public class HypheratorTest {
     public void testHyphenatorLoadsAllDictionaries() throws IOException {
         // Create a new Hyphenator instance
         Hypherator hypherator = new Hypherator();
-        
+
         // Get all dictionaries
         Map<String, HyphenDict> dictionaries = hypherator.getDictionaries();
         
@@ -36,6 +38,27 @@ public class HypheratorTest {
         System.out.println("Loaded " + dictionaries.size() + " dictionaries");
     }
 
+    @Test
+    public void testRealWorldIssues() throws IOException {
+        // Create a new Hyphenator instance
+        Hypherator hypherator = new Hypherator();
+
+        var iterator = Hypherator.getInstance("de");
+        iterator.setWord("mitgeteilt");
+        iterator.setUrgency(9);
+
+        var pb = iterator.first();
+        int count = 0;
+        while (pb != DONE) {
+            var parts = iterator.applyBreak(pb);
+            System.out.println(parts.getFirst() + " - " + parts.getSecond());
+            pb = iterator.next();
+            count++;
+        }
+
+        assertEquals(2, count);
+    }
+
 
     @Test
     public void testHyphenation() throws IOException {
@@ -50,6 +73,8 @@ public class HypheratorTest {
         }
 
         for (String tcName : allTcs) {
+//            if ("lig".equals(tcName)) continue;
+//            if ("unicode".equals(tcName)) continue;
         //for (String tcName : List.of("base")) {
             try (InputStream dictStream = getClass().getResourceAsStream("/data/" + tcName + ".dic");
                  InputStream dataStream = getClass().getResourceAsStream("/data/" + tcName + ".dat")) {

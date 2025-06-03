@@ -1,8 +1,8 @@
 Hypherator - Java Library
-A lightweight, MIT-licensed hyphenation library for Java, based on TeX-style hyphenation patterns. It provides a simple API to hyphenate words using an iterator pattern, making it easy to integrate into tokenizer-based workflows.
+A lightweight, MIT-licensed hyphenation library for Java, based on Hunspell-style hyphenation patterns. It provides a simple API to hyphenate words using an iterator pattern, making it easy to integrate into tokenizer-based workflows.
 
 Features:
-TeX-style hyphenation rules
+Hunspell-style hyphenation rules
 
 Lightweight and pure Java (no native code or JNI)
 
@@ -26,3 +26,5 @@ License:
 MIT License. See LICENSE file for more information.
 
 Compatible LibreOffice hyphenation dictionaries are bundled directly, so you can use Hypherator out of the box for most languages — no additional setup required.
+
+Sponsored by [pdf365.cloud](https://pdf365.cloud).

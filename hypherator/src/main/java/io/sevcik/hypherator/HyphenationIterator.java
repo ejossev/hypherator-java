@@ -47,4 +47,9 @@ public interface HyphenationIterator {
      * @return a pair containing the two parts of the split word
      */
     Pair<String, String> applyBreak(PotentialBreak breakRule);
+
+    /**
+     * Get new iterator on the right part of the word.
+     */
+    HyphenationIterator getInstanceOnRightPart(PotentialBreak breakRule);
 }
