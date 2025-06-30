@@ -1,3 +1,6 @@
 [submodule "dictionaries"]
 	path = dictionaries
 	url = https://github.com/LibreOffice/dictionaries.git
+[submodule "indic_dictionaries"]
+	path = indic_dictionaries
+	url = https://github.com/santhoshtr/hyphenation.git

@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.sevcik</groupId>
         <artifactId>hypherator-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1</version>
     </parent>
     <artifactId>hypherator-tools</artifactId>
     <dependencies>
@@ -46,6 +46,7 @@
                             <mainClass>io.sevcik.DictionariesProcessor</mainClass>
                             <arguments>
                                 <argument>${project.basedir}/../dictionaries</argument>
+                                <argument>${project.basedir}/../indic_dictionaries</argument>
                                 <argument>${project.basedir}/../hypherator-core/src/main/resources/3pp_licenses</argument>
                                 <argument>${project.basedir}/../hypherator-core/src/main/resources/hyphen</argument>
                             </arguments>

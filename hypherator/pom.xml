@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.sevcik</groupId>
     <artifactId>hypherator</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
     <name>Hypherator - Hyphenation iterator</name>
     <description>Java hyphenation library with an iterator interface similar to ICU4J. Includes hyphen dictionaries for multiple languages.</description>

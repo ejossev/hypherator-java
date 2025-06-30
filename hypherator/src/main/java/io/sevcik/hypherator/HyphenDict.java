@@ -11,7 +11,7 @@ import java.util.*;
     protected Map<String, Rule> rules = new HashMap<String, Rule>();
     protected HyphenDict nextLevel = null;
     protected List<String> noHyphens = new ArrayList<>();
-
+    protected String hyphen;
 
     protected void insertRule(Rule newRule) {
         var key = newRule.match;

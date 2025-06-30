@@ -109,6 +109,10 @@ class HyphenDictBuilder {
         }
     }
 
+    public static void addHyphen(HyphenDict dict, String hyphen) {
+        dict.hyphen = hyphen;
+    }
+
     public static void addNormalRule(HyphenDict dict, String line) {
         logger.debug("Adding rule {}", line);
         if (".mas5száz8s3zok1ni/sz=3,1,1,14".equals(line)) {

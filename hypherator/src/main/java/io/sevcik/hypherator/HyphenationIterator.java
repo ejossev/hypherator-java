@@ -52,4 +52,9 @@ public interface HyphenationIterator {
      * Get new iterator on the right part of the word.
      */
     HyphenationIterator getInstanceOnRightPart(PotentialBreak breakRule);
+
+    /**
+     * Get the default hyphen sign for the given language
+     */
+    String getHyphen();
 }

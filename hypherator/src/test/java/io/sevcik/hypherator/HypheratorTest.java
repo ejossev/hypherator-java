@@ -39,6 +39,17 @@ public class HypheratorTest {
     }
 
     @Test
+    public void testHyphenSign() throws IOException {
+        // Create a new Hyphenator instance
+        Hypherator hypherator = new Hypherator();
+        var iterator = Hypherator.getInstance("de");
+        assertEquals("-", iterator.getHyphen());
+
+        iterator = Hypherator.getInstance("ta-IN");
+        assertEquals("", iterator.getHyphen());
+    }
+
+    @Test
     public void testRealWorldIssues() throws IOException {
         // Create a new Hyphenator instance
         Hypherator hypherator = new Hypherator();
@@ -73,9 +84,6 @@ public class HypheratorTest {
         }
 
         for (String tcName : allTcs) {
-//            if ("lig".equals(tcName)) continue;
-//            if ("unicode".equals(tcName)) continue;
-        //for (String tcName : List.of("base")) {
             try (InputStream dictStream = getClass().getResourceAsStream("/data/" + tcName + ".dic");
                  InputStream dataStream = getClass().getResourceAsStream("/data/" + tcName + ".dat")) {
 

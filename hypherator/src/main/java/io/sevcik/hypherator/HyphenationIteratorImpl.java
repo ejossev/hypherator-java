@@ -23,7 +23,12 @@ public class HyphenationIteratorImpl implements HyphenationIterator {
         this.priorityFilter = 10 - urgency;
         resetState();
     }
-    
+
+    @Override
+    public String getHyphen() {
+        return dict.hyphen;
+    }
+
     @Override
     public void setWord(String word) {
         this.word = word;

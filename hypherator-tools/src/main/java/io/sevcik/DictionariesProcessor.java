@@ -40,6 +40,7 @@ public class DictionariesProcessor {
     static class HyphenData {
         List<String> locations;
         List<String> locales;
+        String hyphen = "-";
 
         public HyphenData(List<String> locations, List<String> locales) {
             this.locations = locations;
@@ -63,7 +64,17 @@ public class DictionariesProcessor {
             this.locales = locales;
             return this;
         }
+
+        public HyphenData setHyphen(String hyphen) {
+            this.hyphen = hyphen;
+            return this;
+        }
+
+        public String getHyphen() {
+            return hyphen;
+        }
     }
+
     private final List<HyphenData> hyphenData = new ArrayList<>();
 
     public DictionariesProcessor(String licenseDirectory, String hyphenDirectory) {
@@ -72,7 +83,7 @@ public class DictionariesProcessor {
     }
 
 
-    void processDirectory(String directory) {
+    void processDirectoryLibreOffice(String directory) {
         File dir = new File(directory);
         if (!dir.isDirectory()) {
             System.err.println("Error: " + directory + " is not a directory");
@@ -90,6 +101,62 @@ public class DictionariesProcessor {
             File dictionaryFile = new File(subdir, "dictionaries.xcu");
             if (dictionaryFile.exists() && dictionaryFile.isFile()) {
                 processDictionaryDefinition(dictionaryFile, subdir.getPath());
+            }
+        }
+    }
+
+    void processDirectoryLocaleSubdirs(String directory) {
+        File dir = new File(directory);
+        if (!dir.isDirectory()) {
+            System.err.println("Error: " + directory + " is not a directory");
+            return;
+        }
+
+        File[] subdirectories = dir.listFiles(File::isDirectory);
+        if (subdirectories == null) {
+            System.err.println("Error: Could not list subdirectories in " + directory);
+            return;
+        }
+
+        for (File subdir : subdirectories) {
+            if (!subdir.getName().contains("_"))
+                continue;
+            System.out.println("Processing directory: " + subdir.getPath());
+            String localeName = subdir.getName();
+            String languageTag = localeName.substring(0, localeName.indexOf("_"));
+            List<String> locales = List.of(localeName.replace("_", "-"), languageTag);
+
+            var licenseFiles = subdir.listFiles((dir1, name) -> name.contains("license") || name.contains("LICENSE"));
+            File licenseFile = null;
+            if (licenseFiles != null && licenseFiles.length > 0)
+                licenseFile = licenseFiles[0];
+
+            var dictFile = subdir.listFiles((dir1, name) -> name.endsWith(".dic"));
+            File patternFile = null;
+            if (dictFile != null && dictFile.length > 0)
+                patternFile = dictFile[0];
+
+            System.out.println("About to copy");
+            if (patternFile != null && licenseFile != null) {
+                Path licenseDir = Path.of(licenseDirectory, localeName);
+                Path hyphenDir = Path.of(hyphenDirectory, localeName);
+                createOrDeleteDirectory(licenseDir);
+                createOrDeleteDirectory(hyphenDir);
+                Path targetLic = licenseDir.resolve(licenseFile.getName());
+                Path targetDic = hyphenDir.resolve(patternFile.getName());
+                try {
+                    System.out.println("Copying license file: " + licenseFile.getPath());
+                    Files.copy(licenseFile.toPath(), targetLic, StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("Copying pattern file: " + patternFile.getPath());
+                    Files.copy(patternFile.toPath(), targetDic, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    System.err.println(e);
+                    e.printStackTrace();
+                    System.err.println("Error copying hyphenation files");
+                }
+                var existingEntries = hyphenData.stream().filter(d -> d.locales.contains(languageTag) || d.locales.contains(localeName.replace("_", "-"))).toList();
+                hyphenData.removeAll(existingEntries);
+                hyphenData.add(new HyphenData(List.of(localeName + "/" + patternFile.getName()), locales).setHyphen(""));
             }
         }
     }
@@ -304,6 +371,7 @@ public class DictionariesProcessor {
     private void saveHyphenDataToJson() {
         extractDefaultLocales();
         addManualDictionaries();
+        hyphenData.sort(Comparator.comparing(a -> a.locations.get(0)));
         Path jsonFile = Path.of(hyphenDirectory, "all.json");
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -320,14 +388,15 @@ public class DictionariesProcessor {
         System.out.println("Hypherator Dictionaries Processor");
         System.out.println("Current path: " + System.getProperty("user.dir"));
         if (args.length != 3) {
-            args = List.of("dictionaries", "hypherator/src/main/resources/3pp_licenses", "hypherator/src/main/resources/hyphen").toArray(new String[0]);
+            args = List.of("dictionaries", "indic_dictionaries", "hypherator/src/main/resources/3pp_licenses", "hypherator/src/main/resources/hyphen").toArray(new String[0]);
             //System.err.println("Usage: DictionariesProcessor <sourceDirectory> <licenseDirectory> <hyphenDirectory>");
             //System.exit(1);
         }
 
-        String sourceDirectory = args[0];
-        String licenseDirectory = args[1];
-        String hyphenDirectory = args[2];
+        String loSourceDirectory = args[0];
+        String byLocaleDirectory = args[1];
+        String licenseDirectory = args[2];
+        String hyphenDirectory = args[3];
 
         // Create directories if they don't exist
         try {
@@ -339,7 +408,8 @@ public class DictionariesProcessor {
         }
 
         DictionariesProcessor processor = new DictionariesProcessor(licenseDirectory, hyphenDirectory);
-        processor.processDirectory(sourceDirectory);
+        processor.processDirectoryLibreOffice(loSourceDirectory);
+        processor.processDirectoryLocaleSubdirs(byLocaleDirectory);
         processor.saveHyphenDataToJson();
 
     }

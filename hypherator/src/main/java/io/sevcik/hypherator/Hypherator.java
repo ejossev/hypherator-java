@@ -74,6 +74,7 @@ public class Hypherator {
         return new HyphenationIteratorImpl(dict);
     }
 
+
     /**
      * Builds a new {@link HyphenationIterator} instance from provided input stream
      * @param inputStream the input stream with dictionary data
@@ -114,6 +115,7 @@ public class Hypherator {
                 try {
                     logger.info("Loading dictionary: {} {}", resourcePath, entry.getLocales());
                     HyphenDict dict = loadDictionaryFromResource(resourcePath);
+                    dict.hyphen = entry.getHyphen();
                     dictionaryCount++;
 
                     // Add dictionary for each locale

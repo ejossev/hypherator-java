@@ -8,6 +8,7 @@ import java.util.List;
 public class DictionaryEntry {
     private List<String> locations;
     private List<String> locales;
+    private String hyphen;
 
     public List<String> getLocations() {
         return locations;
@@ -23,5 +24,14 @@ public class DictionaryEntry {
 
     public void setLocales(List<String> locales) {
         this.locales = locales;
+    }
+
+    public String getHyphen() {
+        return hyphen;
+    }
+
+    public DictionaryEntry setHyphen(String hyphen) {
+        this.hyphen = hyphen;
+        return this;
     }
 }
